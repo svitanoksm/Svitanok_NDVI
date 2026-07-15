@@ -54,7 +54,7 @@ if 'page' not in st.session_state:
 # --- БІЧНЕ МЕНЮ ---
 with st.sidebar:
     # Додавання логотипу
-    st.image("https://drive.google.com/uc?export=view&id=15XHuG-z54M9bYtuhdn-NmWJzdDG6TlWZ", use_container_width=True)
+   st.sidebar.image("logo.png", use_container_width=True)
     
     if st.button("🔄 Оновити дані"):
         st.cache_data.clear()
