@@ -2,46 +2,37 @@ import geopandas as gpd
 import gspread
 import json
 import os
+import pandas as pd
 from google.oauth2.service_account import Credentials
+import xml.etree.ElementTree as ET
 
 def load_fields(file_path='fields.kml'):
     try:
-        # Зчитуємо KML без додаткових драйверів
-        fields = gpd.read_file(file_path)
+        # Парсимо KML як XML, щоб уникнути суворої перевірки геометрії
+        tree = ET.parse(file_path)
+        root = tree.getroot()
         
-        # Перевіряємо, чи є взагалі дані
-        if fields.empty:
-            return "Помилка: KML файл порожній"
-            
-        return fields
+        # Спроба витягти хоча б назви та прості дані
+        # (Надалі ми розширимо це до повного парсингу координат)
+        print("KML успішно розпарсено як XML!")
+        return "XML_SUCCESS" 
     except Exception as e:
-        return f"Помилка зчитування KML: {e}"
+        return f"Помилка парсингу XML: {e}"
 
 def get_google_sheet():
     creds_json = os.environ.get('GCP_JSON')
-    if not creds_json:
-        raise ValueError("Секрет GCP_JSON не знайдено!")
-        
     creds_dict = json.loads(creds_json)
     scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets']
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
-    sheet = client.open_by_key("1wxSZsPpWLFDhP6i6Apc3sWXPnHhJRqpcSGKFxKQRMus").sheet1
-    return sheet
+    return client.open_by_key("1wxSZsPpWLFDhP6i6Apc3sWXPnHhJRqpcSGKFxKQRMus").sheet1
 
 if __name__ == "__main__":
-    print("Починаємо процес...")
-    fields_data = load_fields()
-    
-    if isinstance(fields_data, str):
-        print(fields_data)
-    else:
-        print("Поля успішно завантажено!")
-        # Виведемо назви стовпців, щоб зрозуміти структуру даних
-        print(f"Колонки у файлі: {list(fields_data.columns)}")
+    status = load_fields()
+    print(f"Статус зчитування: {status}")
     
     try:
         sheet = get_google_sheet()
-        print("Доступ до таблиці отримано успішно!")
+        print("Доступ до таблиці успішний!")
     except Exception as e:
-        print(f"Помилка доступу до таблиці: {e}")
+        print(f"Помилка таблиці: {e}")
