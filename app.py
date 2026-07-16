@@ -15,7 +15,7 @@ st.markdown("""
         border: 1px solid #2e7d32 !important;
         color: #2e7d32 !important;
         border-radius: 8px !important;
-        padding: 15px 20px !important;
+        padding: 15px 35px !important;
         font-weight: 600 !important;
         transition: all 0.3s;
     }
