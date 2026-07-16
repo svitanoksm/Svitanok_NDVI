@@ -5,3 +5,5 @@ numpy
 geopandas
 google-auth
 gspread
+fastkml
+shapely
