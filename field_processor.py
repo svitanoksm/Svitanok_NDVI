@@ -1,56 +1,44 @@
-import xml.etree.ElementTree as ET
+import geopandas as gpd
 import pandas as pd
-from shapely.geometry import Polygon
+import os
 
 def load_fields(file_path='fields.kml'):
     """
-    Зчитує поля з KML-файлу, ігноруючи складну ієрархію fastkml.
-    Повертає DataFrame з назвами полів та їх геометрією.
+    Зчитує поля з KML-файлу за допомогою geopandas.
+    Автоматично обробляє MultiGeometry та інші складні структури.
     """
+    if not os.path.exists(file_path):
+        print(f"Помилка: Файл {file_path} не знайдено.")
+        return pd.DataFrame()
+
     try:
-        # Визначаємо простір імен KML
-        ns = {'kml': 'http://www.opengis.net/kml/2.2'}
+        # geopandas автоматично парсить KML і створює GeoDataFrame
+        gdf = gpd.read_file(file_path)
         
-        # Парсимо файл
-        tree = ET.parse(file_path)
-        root = tree.getroot()
-        
-        features = []
-        
-        # Шукаємо всі Placemark у документі
-        for placemark in root.findall('.//kml:Placemark', ns):
-            # Отримуємо назву поля
-            name_elem = placemark.find('kml:name', ns)
-            name = name_elem.text if name_elem is not None else "Без назви"
+        # Перевіряємо, чи є в KML колонки з іменами (зазвичай це 'Name')
+        if 'Name' in gdf.columns:
+            df = gdf[['Name', 'geometry']].copy()
+            df = df.rename(columns={'Name': 'name'})
+        else:
+            # Якщо імен немає, створюємо їх автоматично
+            df = gdf[['geometry']].copy()
+            df['name'] = [f"Поле_{i+1}" for i in range(len(df))]
             
-            # Отримуємо координати
-            coords_elem = placemark.find('.//kml:coordinates', ns)
-            if coords_elem is not None:
-                coords_str = coords_elem.text.strip()
-                
-                # Перетворюємо рядок координат у список точок (tuple)
-                points = []
-                for point in coords_str.split():
-                    parts = point.split(',')
-                    # Беремо тільки довготу та широту (0-й та 1-й елементи)
-                    points.append((float(parts[0]), float(parts[1])))
-                
-                # Створюємо геометрію Polygon
-                geom = Polygon(points)
-                features.append({'name': name, 'geometry': geom})
-        
-        # Повертаємо результат як DataFrame
-        df = pd.DataFrame(features)
-        print(f"--- Успішно зчитано {len(df)} полів ---")
+        print(f"--- Успішно зчитано {len(df)} полів через geopandas ---")
         return df
 
     except Exception as e:
-        error_msg = f"Помилка зчитування KML: {e}"
-        print(error_msg)
+        print(f"Помилка зчитування KML через geopandas: {e}")
         return pd.DataFrame()
 
-# Приклад виклику:
+# Основний блок для тестування (виконується при запуску скрипта)
 if __name__ == "__main__":
-    fields_df = load_fields('test_field.kml') # Вкажіть тут назву вашого файлу
+    # Для тесту вказуємо файл, який ви створили
+    test_file = 'test_field.kml'
+    fields_df = load_fields(test_file)
+    
     if not fields_df.empty:
+        print("Перші 5 записів:")
         print(fields_df.head())
+    else:
+        print("Не вдалося завантажити дані.")
