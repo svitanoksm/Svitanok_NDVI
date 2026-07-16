@@ -55,10 +55,6 @@ if 'page' not in st.session_state:
 with st.sidebar:
     # Додавання логотипу
     st.image("logo.png", use_container_width=True)
-    
-    if st.button("🔄 Оновити дані"):
-        st.cache_data.clear()
-        st.rerun()
         
     st.markdown("---")
     if st.button("Зведена аналітика"): st.session_state.page = "Зведена аналітика"
