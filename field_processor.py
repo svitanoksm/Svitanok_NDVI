@@ -1,75 +1,56 @@
+import xml.etree.ElementTree as ET
 import pandas as pd
-import gspread
-import json
-import os
-from fastkml import kml
-from shapely.geometry import shape
-from google.oauth2.service_account import Credentials
+from shapely.geometry import Polygon
 
-# 1. Надійна функція зчитування KML
 def load_fields(file_path='fields.kml'):
+    """
+    Зчитує поля з KML-файлу, ігноруючи складну ієрархію fastkml.
+    Повертає DataFrame з назвами полів та їх геометрією.
+    """
     try:
-        with open(file_path, 'rb') as f:
-            k = kml.KML()
-            k.from_string(f.read())
+        # Визначаємо простір імен KML
+        ns = {'kml': 'http://www.opengis.net/kml/2.2'}
+        
+        # Парсимо файл
+        tree = ET.parse(file_path)
+        root = tree.getroot()
         
         features = []
         
-        # Доступ до об'єктів без виклику функцій
-        def traverse(feature):
-            # Якщо це Placemark, додаємо його
-            if isinstance(feature, kml.Placemark):
-                features.append({'name': feature.name, 'geometry': shape(feature.geometry)})
-            # Якщо є вкладені об'єкти, перевіряємо їх
-            if hasattr(feature, 'features'):
-                # Доступ до властивості features без дужок
-                child_features = feature.features
-                if callable(child_features):
-                    for f in child_features():
-                        traverse(f)
-                elif isinstance(child_features, (list, tuple)):
-                    for f in child_features:
-                        traverse(f)
-
-        # Починаємо обхід
-        for feature in list(k.features()):
-            traverse(feature)
+        # Шукаємо всі Placemark у документі
+        for placemark in root.findall('.//kml:Placemark', ns):
+            # Отримуємо назву поля
+            name_elem = placemark.find('kml:name', ns)
+            name = name_elem.text if name_elem is not None else "Без назви"
+            
+            # Отримуємо координати
+            coords_elem = placemark.find('.//kml:coordinates', ns)
+            if coords_elem is not None:
+                coords_str = coords_elem.text.strip()
+                
+                # Перетворюємо рядок координат у список точок (tuple)
+                points = []
+                for point in coords_str.split():
+                    parts = point.split(',')
+                    # Беремо тільки довготу та широту (0-й та 1-й елементи)
+                    points.append((float(parts[0]), float(parts[1])))
+                
+                # Створюємо геометрію Polygon
+                geom = Polygon(points)
+                features.append({'name': name, 'geometry': geom})
         
-        return pd.DataFrame(features)
+        # Повертаємо результат як DataFrame
+        df = pd.DataFrame(features)
+        print(f"--- Успішно зчитано {len(df)} полів ---")
+        return df
+
     except Exception as e:
-        return f"Помилка зчитування KML: {e}"
+        error_msg = f"Помилка зчитування KML: {e}"
+        print(error_msg)
+        return pd.DataFrame()
 
-# 2. Функція підключення до Google Таблиці
-def get_google_sheet():
-    creds_json = os.environ.get('GCP_JSON')
-    if not creds_json:
-        raise ValueError("Секрет GCP_JSON не знайдено в налаштуваннях GitHub!")
-    
-    creds_dict = json.loads(creds_json)
-    scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets']
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-    client = gspread.authorize(creds)
-    
-    # Відкриваємо таблицю
-    return client.open_by_key("1wxSZsPpWLFDhP6i6Apc3sWXPnHhJRqpcSGKFxKQRMus").sheet1
-
-# 3. Основна логіка
+# Приклад виклику:
 if __name__ == "__main__":
-    print("--- Початок обробки ---")
-    
-    # Крок 1: Зчитуємо поля
-    fields_df = load_fields()
-    if isinstance(fields_df, pd.DataFrame):
-        print(f"Успішно зчитано {len(fields_df)} полів.")
-        print(f"Перші поля: {list(fields_df['name'].head())}")
-    else:
-        print(fields_df) # Виведе помилку, якщо щось не так
-        
-    # Крок 2: Перевіряємо таблицю
-    try:
-        sheet = get_google_sheet()
-        print("Доступ до Google Таблиці успішний!")
-    except Exception as e:
-        print(f"Помилка доступу до таблиці: {e}")
-        
-    print("--- Обробку завершено ---")
+    fields_df = load_fields('test_field.kml') # Вкажіть тут назву вашого файлу
+    if not fields_df.empty:
+        print(fields_df.head())
