@@ -1,5 +1,5 @@
 name: Test Field Processor
-on: [push] # Запуск при кожному оновленні коду
+on: [push]
 
 jobs:
   run-test:
@@ -12,7 +12,8 @@ jobs:
           python-version: '3.9'
       - name: Install dependencies
         run: |
-          pip install geopandas gspread google-auth
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
       - name: Run script
         env:
           GCP_JSON: ${{ secrets.GCP_JSON }}
