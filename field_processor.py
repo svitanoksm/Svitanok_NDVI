@@ -14,19 +14,26 @@ def load_fields(file_path='fields.kml'):
             k.from_string(f.read())
         
         features = []
-        # Ми отримуємо головний об'єкт і перебираємо його "features" не як функцію, а як властивість
-        # Це виправляє помилку 'list' object is not callable
-        def parse_feature(feature):
+        
+        # Доступ до об'єктів без виклику функцій
+        def traverse(feature):
+            # Якщо це Placemark, додаємо його
+            if isinstance(feature, kml.Placemark):
+                features.append({'name': feature.name, 'geometry': shape(feature.geometry)})
+            # Якщо є вкладені об'єкти, перевіряємо їх
             if hasattr(feature, 'features'):
-                for f in feature.features():
-                    parse_feature(f)
-            elif isinstance(feature, kml.Placemark):
-                name = feature.name
-                geometry = shape(feature.geometry)
-                features.append({'name': name, 'geometry': geometry})
+                # Доступ до властивості features без дужок
+                child_features = feature.features
+                if callable(child_features):
+                    for f in child_features():
+                        traverse(f)
+                elif isinstance(child_features, (list, tuple)):
+                    for f in child_features:
+                        traverse(f)
 
+        # Починаємо обхід
         for feature in list(k.features()):
-            parse_feature(feature)
+            traverse(feature)
         
         return pd.DataFrame(features)
     except Exception as e:
