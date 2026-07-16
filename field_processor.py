@@ -7,16 +7,19 @@ from google.oauth2.service_account import Credentials
 # 1. Функція зчитування полів з автоматичним виправленням геометрії
 def load_fields(file_path='fields.kml'):
     try:
-        # Зчитуємо KML
+        # Додаємо налаштування для ігнорування помилок незамкнених кілець
+        import fiona
+        fiona.drvsupport.supported_drivers['KML'] = 'rw'
+        
+        # Спробуємо зчитати з ігноруванням помилок геометрії
         fields = gpd.read_file(file_path, driver='KML')
         
-        # Виправляємо незамкнені або некоректні полігони
-        fields['geometry'] = fields['geometry'].make_valid()
+        # Якщо зчиталось, але залишились "биті" полігони — виправляємо їх
+        fields['geometry'] = fields['geometry'].buffer(0)
         
         return fields
     except Exception as e:
         return f"Помилка зчитування KML: {e}"
-
 # 2. Функція підключення до Google Таблиці
 def get_google_sheet():
     # Отримуємо JSON з секретів GitHub
