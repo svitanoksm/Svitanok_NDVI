@@ -14,13 +14,19 @@ def load_fields(file_path='fields.kml'):
             k.from_string(f.read())
         
         features = []
-        # Рекурсивно знаходимо всі Placemark
-        for feature in k.features():
-            for placemark in feature.features():
-                name = placemark.name
-                # Перетворюємо геометрію в об'єкт shapely
-                geometry = shape(placemark.geometry)
+        # Ми отримуємо головний об'єкт і перебираємо його "features" не як функцію, а як властивість
+        # Це виправляє помилку 'list' object is not callable
+        def parse_feature(feature):
+            if hasattr(feature, 'features'):
+                for f in feature.features():
+                    parse_feature(f)
+            elif isinstance(feature, kml.Placemark):
+                name = feature.name
+                geometry = shape(feature.geometry)
                 features.append({'name': name, 'geometry': geometry})
+
+        for feature in list(k.features()):
+            parse_feature(feature)
         
         return pd.DataFrame(features)
     except Exception as e:
