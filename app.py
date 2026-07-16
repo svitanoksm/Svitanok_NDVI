@@ -78,9 +78,19 @@ if st.session_state.page == "Зведена аналітика":
 
 elif st.session_state.page == "Аналіз одного поля":
     st.header("Детальний аналіз вегетації одного поля")
+    
+    # Додаємо фільтр за роком
+    selected_year = st.selectbox("Оберіть рік", sorted(analytics['Дата початку тижня'].dt.year.unique(), reverse=True))
+    
+    # Додаємо фільтр за полем
     field_id = st.selectbox("Оберіть номер поля", field_list)
+    
     if field_id:
-        fig = px.line(analytics, x='Дата початку тижня', y=field_id, title=f"Вегетація поля №{field_id}")
+        # Фільтруємо дані за вибраним роком
+        data_filtered = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
+        
+        # Побудова графіка за відфільтрованими даними
+        fig = px.line(data_filtered, x='Дата початку тижня', y=field_id, title=f"Вегетація поля №{field_id} у {selected_year} році")
         st.plotly_chart(fig, use_container_width=True)
 
 elif st.session_state.page == "Порівняння культур":
