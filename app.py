@@ -10,19 +10,20 @@ st.markdown("""
     <style>
     div[data-testid="stSidebar"] button {
         width: 100%;
-        background-color: #f8f9fa;
-        border: 1px solid #d1d9e6;
-        color: #007bff;
-        border-radius: 5px;
-        padding: 10px 15px;
+        background-color: #e8f5e9;    /* Світло-зелений фон */
+        border: 1px solid #2e7d32;   /* Темно-зелена рамка */
+        color: #2e7d32;              /* Темно-зелений колір тексту */
+        border-radius: 8px;          /* Трохи заокруглені кути */
+        padding: 15px 20px;          /* Збільшені відступи (зробить кнопки довшими/вищими) */
         text-align: left;
-        margin-bottom: 8px;
-        font-weight: 500;
+        margin-bottom: 12px;         /* Відстань між кнопками */
+        font-weight: 600;            /* Жирніший шрифт */
         transition: all 0.3s;
     }
     div[data-testid="stSidebar"] button:hover {
-        background-color: #eef2ff;
-        border-color: #007bff;
+        background-color: #2e7d32;   /* Насичений зелений при наведенні */
+        color: white;                /* Білий текст при наведенні */
+        border-color: #1b5e20;
     }
     </style>
 """, unsafe_allow_html=True)
