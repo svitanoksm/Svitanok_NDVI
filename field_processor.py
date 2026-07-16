@@ -1,38 +1,62 @@
-import geopandas as gpd
+import pandas as pd
 import gspread
 import json
 import os
-import pandas as pd
+from fastkml import kml
+from shapely.geometry import shape
 from google.oauth2.service_account import Credentials
-import xml.etree.ElementTree as ET
 
+# 1. Надійна функція зчитування KML
 def load_fields(file_path='fields.kml'):
     try:
-        # Парсимо KML як XML, щоб уникнути суворої перевірки геометрії
-        tree = ET.parse(file_path)
-        root = tree.getroot()
+        with open(file_path, 'rb') as f:
+            k = kml.KML()
+            k.from_string(f.read())
         
-        # Спроба витягти хоча б назви та прості дані
-        # (Надалі ми розширимо це до повного парсингу координат)
-        print("KML успішно розпарсено як XML!")
-        return "XML_SUCCESS" 
+        features = []
+        # Рекурсивно знаходимо всі Placemark
+        for feature in k.features():
+            for placemark in feature.features():
+                name = placemark.name
+                # Перетворюємо геометрію в об'єкт shapely
+                geometry = shape(placemark.geometry)
+                features.append({'name': name, 'geometry': geometry})
+        
+        return pd.DataFrame(features)
     except Exception as e:
-        return f"Помилка парсингу XML: {e}"
+        return f"Помилка зчитування KML: {e}"
 
+# 2. Функція підключення до Google Таблиці
 def get_google_sheet():
     creds_json = os.environ.get('GCP_JSON')
+    if not creds_json:
+        raise ValueError("Секрет GCP_JSON не знайдено в налаштуваннях GitHub!")
+    
     creds_dict = json.loads(creds_json)
     scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets']
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
+    
+    # Відкриваємо таблицю
     return client.open_by_key("1wxSZsPpWLFDhP6i6Apc3sWXPnHhJRqpcSGKFxKQRMus").sheet1
 
+# 3. Основна логіка
 if __name__ == "__main__":
-    status = load_fields()
-    print(f"Статус зчитування: {status}")
+    print("--- Початок обробки ---")
     
+    # Крок 1: Зчитуємо поля
+    fields_df = load_fields()
+    if isinstance(fields_df, pd.DataFrame):
+        print(f"Успішно зчитано {len(fields_df)} полів.")
+        print(f"Перші поля: {list(fields_df['name'].head())}")
+    else:
+        print(fields_df) # Виведе помилку, якщо щось не так
+        
+    # Крок 2: Перевіряємо таблицю
     try:
         sheet = get_google_sheet()
-        print("Доступ до таблиці успішний!")
+        print("Доступ до Google Таблиці успішний!")
     except Exception as e:
-        print(f"Помилка таблиці: {e}")
+        print(f"Помилка доступу до таблиці: {e}")
+        
+    print("--- Обробку завершено ---")
