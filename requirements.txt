@@ -9,3 +9,4 @@ fastkml
 shapely
 earthengine-api
 oauth2client
+matplotlib
