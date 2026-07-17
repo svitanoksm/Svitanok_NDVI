@@ -6,8 +6,7 @@ import plotly.express as px
 st.set_page_config(layout="wide", page_title="Агро-аналітика")
 
 # --- СТИЛІЗАЦІЯ ---
-# Замініть ваш st.button на такий підхід:
-st.sidebar.markdown("""
+st.markdown("""
     <style>
     .full-width-btn {
         display: block;
@@ -28,10 +27,6 @@ st.sidebar.markdown("""
         color: white;
     }
     </style>
-
-    <a href="?action=sirozmina" class="full-width-btn">Сівозміна</a>
-    <a href="?action=analiz_polya" class="full-width-btn">Аналіз по полю</a>
-    <a href="?action=analiz_kultur" class="full-width-btn">Аналіз в розрізі культур</a>
 """, unsafe_allow_html=True)
 
 # --- ЗАВАНТАЖЕННЯ ДАНИХ ---
@@ -54,49 +49,42 @@ def load_data():
 
 analytics, rotation = load_data()
 
-# Ініціалізація сторінки
-if 'page' not in st.session_state:
-    st.session_state.page = "Зведена аналітика"
+# --- ЛОГІКА НАВІГАЦІЇ ---
+query_params = st.query_params
+current_page = query_params.get("page", "Зведена аналітика")
 
 # --- БІЧНЕ МЕНЮ ---
 with st.sidebar:
-    # Додавання логотипу
     st.image("logo.png", use_container_width=True)
-        
     st.markdown("---")
-    if st.button("Сівозміна"): st.session_state.page = "Зведена аналітика"
-    if st.button("Аналіз по полю"): st.session_state.page = "Аналіз одного поля"
-    if st.button("Аналіз в розрізі культур"): st.session_state.page = "Порівняння культур"
+    
+    # Використовуємо HTML-кнопки для навігації
+    st.markdown('<a href="/?page=Зведена+аналітика" target="_self" class="full-width-btn">Сівозміна</a>', unsafe_allow_html=True)
+    st.markdown('<a href="/?page=Аналіз+одного+поля" target="_self" class="full-width-btn">Аналіз по полю</a>', unsafe_allow_html=True)
+    st.markdown('<a href="/?page=Порівняння+культур" target="_self" class="full-width-btn">Аналіз в розрізі культур</a>', unsafe_allow_html=True)
 
 # --- ОСНОВНА ЧАСТИНА ---
 st.title("🌾 Агро-аналітика: Вегетація та сівозміна")
 field_list = [col for col in analytics.columns if col not in ['Дата початку тижня', 'Тиждень']]
 
-if st.session_state.page == "Зведена аналітика":
+if current_page == "Зведена аналітика":
     st.header("Розподіл культур по роках")
     years = sorted(rotation['Рік врожаю'].unique(), reverse=True)
     selected_year = st.selectbox("Оберіть рік врожаю", years)
     fields_in_year = rotation[rotation['Рік врожаю'] == selected_year]
     st.dataframe(fields_in_year[['№ поля', 'Культура', 'Площа посіву', 'Сорт, гібрид']], use_container_width=True)
 
-elif st.session_state.page == "Аналіз одного поля":
+elif current_page == "Аналіз одного поля":
     st.header("Детальний аналіз вегетації одного поля")
-    
-    # Додаємо фільтр за роком
     selected_year = st.selectbox("Оберіть рік", sorted(analytics['Дата початку тижня'].dt.year.unique(), reverse=True))
-    
-    # Додаємо фільтр за полем
     field_id = st.selectbox("Оберіть номер поля", field_list)
     
     if field_id:
-        # Фільтруємо дані за вибраним роком
         data_filtered = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
-        
-        # Побудова графіка за відфільтрованими даними
         fig = px.line(data_filtered, x='Дата початку тижня', y=field_id, title=f"Вегетація поля №{field_id} у {selected_year} році")
         st.plotly_chart(fig, use_container_width=True)
 
-elif st.session_state.page == "Порівняння культур":
+elif current_page == "Порівняння культур":
     st.header("Порівняння полів")
     field_id = st.selectbox("Оберіть базове поле", field_list)
     if field_id:
