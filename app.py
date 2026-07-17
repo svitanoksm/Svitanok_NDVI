@@ -126,5 +126,3 @@ elif current_page == "Рейтинг полів":
         st.dataframe(field_max.style.background_gradient(subset=['Максимальна вегетація'], cmap='Greens'), use_container_width=True)
     else:
         st.warning("Немає даних для побудови графіка у вибраному році.")
-
-```
