@@ -1,7 +1,9 @@
+Ось повний, виправлений код вашого застосунку. Я інтегрував усі зміни: виправлену навігацію, використання `st.query_params`, примусове перетворення даних у числа для коректної побудови графіка рейтингу та оновлену логіку пошуку максимуму.
+
+```python
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-# Примітка: для роботи .style.background_gradient() додайте 'matplotlib' у ваш requirements.txt
 
 # Налаштування сторінки
 st.set_page_config(layout="wide", page_title="Агро-аналітика")
@@ -100,20 +102,32 @@ elif current_page == "Порівняння культур":
             st.plotly_chart(fig, use_container_width=True)
 
 elif current_page == "Рейтинг полів":
-    st.header("🏆 Рейтинг полів за рівнем вегетації")
+    st.header("🏆 Рейтинг полів за максимальною вегетацією")
     selected_year = st.selectbox("Оберіть рік для аналізу", sorted(analytics['Дата початку тижня'].dt.year.unique(), reverse=True))
     
+    # Фільтрація даних за роком
     year_data = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
-    field_means = year_data[field_list].mean().sort_values(ascending=False)
     
-    df_rating = pd.DataFrame({'Поле': field_means.index, 'Середня вегетація': field_means.values})
+    # Розрахунок максимуму
+    year_data_numeric = year_data[field_list].apply(pd.to_numeric, errors='coerce')
+    field_max = year_data_numeric.max().sort_values(ascending=False).reset_index()
+    field_max.columns = ['Поле', 'Максимальна вегетація']
     
-    fig = px.bar(df_rating, x='Поле', y='Середня вегетація', 
-                 title=f"Рейтинг полів за середнім показником вегетації у {selected_year} році",
-                 color='Середня вегетація', color_continuous_scale='Greens')
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.subheader("Таблиця лідерів")
-    # Тепер працюватиме, коли ви додасте matplotlib у requirements.txt
-    st.dataframe(df_rating.style.background_gradient(subset=['Середня вегетація'], cmap='Greens'), use_container_width=True)
+    if not field_max.empty:
+        # Графік
+        fig = px.bar(
+            field_max, 
+            x='Поле', 
+            y='Максимальна вегетація', 
+            title=f"Рейтинг полів за піковим показником вегетації у {selected_year} році",
+            color='Максимальна вегетація', 
+            color_continuous_scale='Greens'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.subheader("Таблиця лідерів")
+        st.dataframe(field_max.style.background_gradient(subset=['Максимальна вегетація'], cmap='Greens'), use_container_width=True)
+    else:
+        st.warning("Немає даних для побудови графіка у вибраному році.")
+
+```
