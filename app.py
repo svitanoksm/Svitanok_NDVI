@@ -64,7 +64,7 @@ with st.sidebar:
     st.markdown('<a href="/?page=Порівняння+культур" target="_self" class="full-width-btn">Аналіз в розрізі культур</a>', unsafe_allow_html=True)
 
 # --- ОСНОВНА ЧАСТИНА ---
-st.title("🌾 Агро-аналітика: Вегетація та сівозміна")
+st.title("🌻 Агро-аналітика: Вегетація та сівозміна")
 field_list = [col for col in analytics.columns if col not in ['Дата початку тижня', 'Тиждень']]
 
 if current_page == "Зведена аналітика":
