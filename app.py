@@ -8,24 +8,25 @@ st.set_page_config(layout="wide", page_title="Агро-аналітика")
 # --- СТИЛІЗАЦІЯ ---
 st.markdown("""
     <style>
-    /* Стиль для всіх кнопок у сайдбарі */
-    div[data-testid="stSidebar"] button {
-        display: block !important;       /* Перетворює кнопку на блоковий елемент */
-        width: 100% !important;          /* Примусово розтягує на всю ширину */
-        min-width: 200px !important;     /* Мінімальна ширина для стабільності */
+    /* Знаходимо контейнер, в якому лежить кнопка */
+    section[data-testid="stSidebar"] div.stButton > button {
+        width: 100% !important;            /* Розтягуємо кнопку */
         background-color: #e8f5e9 !important;
         border: 1px solid #2e7d32 !important;
         color: #2e7d32 !important;
         border-radius: 8px !important;
-        padding: 10px 0 !important;      /* Вертикальний відступ */
-        text-align: center !important;   /* Центрування тексту */
+        padding: 10px 10px !important;
         font-weight: 600 !important;
-        margin-bottom: 10px !important;  /* Відступ між кнопками */
         transition: all 0.3s;
     }
     
+    /* Додатково розтягуємо сам контейнер кнопки */
+    section[data-testid="stSidebar"] div.stButton {
+        width: 100% !important;
+    }
+
     /* Стиль при наведенні */
-    div[data-testid="stSidebar"] button:hover {
+    section[data-testid="stSidebar"] div.stButton > button:hover {
         background-color: #2e7d32 !important;
         color: white !important;
         border-color: #1b5e20 !important;
