@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+# Примітка: для роботи .style.background_gradient() додайте 'matplotlib' у ваш requirements.txt
 
 # Налаштування сторінки
 st.set_page_config(layout="wide", page_title="Агро-аналітика")
@@ -64,7 +65,7 @@ with st.sidebar:
     st.markdown('<a href="/?page=Рейтинг+полів" target="_self" class="full-width-btn">Рейтинг полів</a>', unsafe_allow_html=True)
 
 # --- ОСНОВНА ЧАСТИНА ---
-st.title("🌾 Агро-аналітика: Вегетація та сівозміна")
+st.title("Агро-аналітика: Вегетація та сівозміна")
 field_list = [col for col in analytics.columns if col not in ['Дата початку тижня', 'Тиждень']]
 
 if current_page == "Зведена аналітика":
@@ -114,4 +115,5 @@ elif current_page == "Рейтинг полів":
     st.plotly_chart(fig, use_container_width=True)
     
     st.subheader("Таблиця лідерів")
+    # Тепер працюватиме, коли ви додасте matplotlib у requirements.txt
     st.dataframe(df_rating.style.background_gradient(subset=['Середня вегетація'], cmap='Greens'), use_container_width=True)
