@@ -27,5 +27,8 @@ jobs:
         env:
           GCP_JSON: ${{ secrets.GCP_JSON }}
 
+      # ДОДАЙТЕ ЦЕЙ КРОК: встановлення змінної оточення для Earth Engine
       - name: Run calculator
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/credentials.json
         run: python ndvi_calculator.py
