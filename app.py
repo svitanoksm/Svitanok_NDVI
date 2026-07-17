@@ -6,32 +6,32 @@ import plotly.express as px
 st.set_page_config(layout="wide", page_title="Агро-аналітика")
 
 # --- СТИЛІЗАЦІЯ ---
-st.markdown("""
+# Замініть ваш st.button на такий підхід:
+st.sidebar.markdown("""
     <style>
-    /* Знаходимо контейнер, в якому лежить кнопка */
-    section[data-testid="stSidebar"] div.stButton > button {
-        width: 100% !important;            /* Розтягуємо кнопку */
-        background-color: #e8f5e9 !important;
-        border: 1px solid #2e7d32 !important;
-        color: #2e7d32 !important;
-        border-radius: 8px !important;
-        padding: 10px 10px !important;
-        font-weight: 600 !important;
+    .full-width-btn {
+        display: block;
+        width: 100% !important;
+        background-color: #e8f5e9;
+        border: 1px solid #2e7d32;
+        color: #2e7d32;
+        padding: 10px;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-bottom: 10px;
         transition: all 0.3s;
     }
-    
-    /* Додатково розтягуємо сам контейнер кнопки */
-    section[data-testid="stSidebar"] div.stButton {
-        width: 100% !important;
-    }
-
-    /* Стиль при наведенні */
-    section[data-testid="stSidebar"] div.stButton > button:hover {
-        background-color: #2e7d32 !important;
-        color: white !important;
-        border-color: #1b5e20 !important;
+    .full-width-btn:hover {
+        background-color: #2e7d32;
+        color: white;
     }
     </style>
+
+    <a href="?action=sirozmina" class="full-width-btn">Сівозміна</a>
+    <a href="?action=analiz_polya" class="full-width-btn">Аналіз по полю</a>
+    <a href="?action=analiz_kultur" class="full-width-btn">Аналіз в розрізі культур</a>
 """, unsafe_allow_html=True)
 
 # --- ЗАВАНТАЖЕННЯ ДАНИХ ---
