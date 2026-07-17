@@ -1,8 +1,0 @@
-- name: Run calculator
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/credentials.json
-        run: |
-          # Примусова авторизація для Earth Engine
-          python -c "import ee; ee.Initialize(project='agro-ndvi-system')"
-          # Запуск вашого скрипта
-          python ndvi_calculator.py
