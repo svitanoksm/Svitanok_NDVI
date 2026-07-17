@@ -10,12 +10,15 @@ st.markdown("""
     <style>
     /* Стиль для всіх кнопок у сайдбарі */
     section[data-testid="stSidebar"] button {
-        width: 100% !important;
+        width: 100% !important;          /* Займає всю ширину сайдбару */
+        display: flex !important;        /* Вмикає flex-модель */
+        justify-content: center !important; /* Центрує текст по горизонталі */
+        align-items: center !important;  /* Центрує текст по вертикалі */
         background-color: #e8f5e9 !important;
         border: 1px solid #2e7d32 !important;
         color: #2e7d32 !important;
         border-radius: 8px !important;
-        padding: 5px 70px !important;
+        padding: 15px 10px !important;   /* Зменшено горизонтальний падінг, щоб не ламало ширину */
         font-weight: 600 !important;
         transition: all 0.3s;
     }
