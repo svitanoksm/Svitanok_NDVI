@@ -2,6 +2,7 @@ import ee
 import geopandas as gpd
 import gspread
 import time
+import os
 from datetime import datetime, timedelta
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -11,8 +12,19 @@ SHEET_NAME = 'NDVI'
 KML_FILE = 'fields_2026.kml'
 PROJECT_ID = 'agro-ndvi-system'
 
-# 2. Ініціалізація
-ee.Initialize(project=PROJECT_ID)
+# 2. Ініціалізація з підтримкою автоматичної авторизації
+def initialize_ee():
+    if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+        # Авторизація для хмари (GitHub Actions)
+        credentials = ee.ServiceAccountCredentials('', key_file=os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+        ee.Initialize(credentials=credentials, project=PROJECT_ID)
+    else:
+        # Авторизація для локального ПК
+        ee.Initialize(project=PROJECT_ID)
+
+initialize_ee()
+
+# Авторизація для Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
 client = gspread.authorize(creds)
@@ -29,7 +41,6 @@ def load_kml_geometry(row_geometry):
     return ee.Geometry.Polygon([coords])
 
 def get_ndvi(geometry):
-    # Шукаємо в діапазоні останніх 15 днів
     current_date = datetime.now()
     
     # Перебираємо дні від сьогодні назад
@@ -38,22 +49,18 @@ def get_ndvi(geometry):
         start_str = target_date.strftime('%Y-%m-%d')
         end_str = (target_date + timedelta(days=1)).strftime('%Y-%m-%d')
         
-        # Шукаємо колекцію за конкретну добу
         collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED') \
             .filterBounds(geometry) \
             .filterDate(start_str, end_str) \
             .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
             
-        # Якщо є знімки, беремо найсвіжіший (перший у списку)
         if collection.size().getInfo() > 0:
-            # Отримуємо перший знімок з колекції за цей день
             img = collection.first()
             ndvi = img.normalizedDifference(['B8', 'B4']).rename('NDVI')
             stats = ndvi.reduceRegion(reducer=ee.Reducer.mean(), geometry=geometry, scale=10, maxPixels=1e9)
             
             result = stats.getInfo().get('NDVI')
             if result is not None:
-                # Повертаємо NDVI та дату знімка для інформації
                 return result
                 
     return None 
@@ -66,7 +73,6 @@ if __name__ == "__main__":
     
     row_data = [''] * len(header)
     
-    # Дата запису в таблицю
     now = datetime.now()
     row_data[0] = now.strftime("%d.%m.%Y") 
     row_data[1] = now.isocalendar()[1]
