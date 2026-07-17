@@ -58,13 +58,13 @@ with st.sidebar:
     st.image("logo.png", use_container_width=True)
     st.markdown("---")
     
-    # Використовуємо HTML-кнопки для навігації
     st.markdown('<a href="/?page=Зведена+аналітика" target="_self" class="full-width-btn">Сівозміна</a>', unsafe_allow_html=True)
     st.markdown('<a href="/?page=Аналіз+одного+поля" target="_self" class="full-width-btn">Аналіз по полю</a>', unsafe_allow_html=True)
     st.markdown('<a href="/?page=Порівняння+культур" target="_self" class="full-width-btn">Аналіз в розрізі культур</a>', unsafe_allow_html=True)
+    st.markdown('<a href="/?page=Рейтинг+полів" target="_self" class="full-width-btn">Рейтинг полів</a>', unsafe_allow_html=True)
 
 # --- ОСНОВНА ЧАСТИНА ---
-st.title("🌻 Агро-аналітика: Вегетація та сівозміна")
+st.title("🌾 Агро-аналітика: Вегетація та сівозміна")
 field_list = [col for col in analytics.columns if col not in ['Дата початку тижня', 'Тиждень']]
 
 if current_page == "Зведена аналітика":
@@ -97,3 +97,21 @@ elif current_page == "Порівняння культур":
             data = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
             fig = px.line(data, x='Дата початку тижня', y=valid_others, title=f"Порівняння: {crop_name} ({selected_year})")
             st.plotly_chart(fig, use_container_width=True)
+
+elif current_page == "Рейтинг полів":
+    st.header("🏆 Рейтинг полів за рівнем вегетації")
+    selected_year = st.selectbox("Оберіть рік для аналізу", sorted(analytics['Дата початку тижня'].dt.year.unique(), reverse=True))
+    
+    year_data = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
+    field_means = year_data[field_list].mean().sort_values(ascending=False)
+    
+    df_rating = pd.DataFrame({'Поле': field_means.index, 'Середня вегетація': field_means.values})
+    
+    fig = px.bar(df_rating, x='Поле', y='Середня вегетація', 
+                 title=f"Рейтинг полів за середнім показником вегетації у {selected_year} році",
+                 color='Середня вегетація', color_continuous_scale='Greens')
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.subheader("Таблиця лідерів")
+    st.dataframe(df_rating.style.background_gradient(subset=['Середня вегетація'], cmap='Greens'), use_container_width=True)
