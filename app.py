@@ -58,9 +58,9 @@ with st.sidebar:
     st.image("logo.png", use_container_width=True)
         
     st.markdown("---")
-    if st.button("Зведена аналітика"): st.session_state.page = "Зведена аналітика"
-    if st.button("Аналіз одного поля"): st.session_state.page = "Аналіз одного поля"
-    if st.button("Порівняння культур"): st.session_state.page = "Порівняння культур"
+    if st.button("Сівозміна"): st.session_state.page = "Зведена аналітика"
+    if st.button("Аналіз по полю"): st.session_state.page = "Аналіз одного поля"
+    if st.button("Аналіз в розрізі культур"): st.session_state.page = "Порівняння культур"
 
 # --- ОСНОВНА ЧАСТИНА ---
 st.title("🌾 Агро-аналітика: Вегетація та сівозміна")
