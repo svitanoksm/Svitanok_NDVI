@@ -9,21 +9,23 @@ st.set_page_config(layout="wide", page_title="Агро-аналітика")
 st.markdown("""
     <style>
     /* Стиль для всіх кнопок у сайдбарі */
-    section[data-testid="stSidebar"] button {
-        width: 100% !important;          /* Займає всю ширину сайдбару */
-        display: flex !important;        /* Вмикає flex-модель */
-        justify-content: center !important; /* Центрує текст по горизонталі */
-        align-items: center !important;  /* Центрує текст по вертикалі */
+    div[data-testid="stSidebar"] button {
+        display: block !important;       /* Перетворює кнопку на блоковий елемент */
+        width: 100% !important;          /* Примусово розтягує на всю ширину */
+        min-width: 200px !important;     /* Мінімальна ширина для стабільності */
         background-color: #e8f5e9 !important;
         border: 1px solid #2e7d32 !important;
         color: #2e7d32 !important;
         border-radius: 8px !important;
-        padding: 15px 10px !important;   /* Зменшено горизонтальний падінг, щоб не ламало ширину */
+        padding: 10px 0 !important;      /* Вертикальний відступ */
+        text-align: center !important;   /* Центрування тексту */
         font-weight: 600 !important;
+        margin-bottom: 10px !important;  /* Відступ між кнопками */
         transition: all 0.3s;
     }
+    
     /* Стиль при наведенні */
-    section[data-testid="stSidebar"] button:hover {
+    div[data-testid="stSidebar"] button:hover {
         background-color: #2e7d32 !important;
         color: white !important;
         border-color: #1b5e20 !important;
