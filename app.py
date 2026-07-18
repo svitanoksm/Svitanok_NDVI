@@ -99,16 +99,36 @@ elif current_page == "Порівняння культур":
             st.plotly_chart(fig, use_container_width=True)
 
 elif current_page == "Максимальний NDVI по полям":
-    st.header("🏆 Рейтинг полів за максимальною вегетацією (за весь період)")
+    st.header("🏆 Рейтинг полів (1 — найвища вегетація)")
     
-    # 1. Розрахунок максимуму по кожному полю за ВСІ наявні дані (без фільтрації за роком)
+    # 1. Розрахунок максимуму по кожному полю
     analytics_numeric = analytics[field_list].apply(pd.to_numeric, errors='coerce')
-    field_max = analytics_numeric.max().sort_values(ascending=False).reset_index()
+    field_max = analytics_numeric.max().reset_index()
     field_max.columns = ['Поле', 'Максимальна вегетація']
+    field_max = field_max.sort_values(by='Максимальна вегетація', ascending=False)
     
+    # 2. Визначення потенціалу (1-5) згідно з вашими діапазонами
+    field_max['Потенціал'] = pd.cut(
+        field_max['Максимальна вегетація'], 
+        bins=[0.649, 0.688, 0.726, 0.764, 0.802, 0.841], 
+        labels=[5, 4, 3, 2, 1]
+    )
+    
+    # 3. Функція для кольорів: 1-й рейтинг — зелений, 5-й — жовтий
+    def color_potentials(val):
+        colors = {
+            1: 'background-color: #2e7d32; color: white', # Зелений
+            2: 'background-color: #66bb6a; color: black', 
+            3: 'background-color: #fff176; color: black', 
+            4: 'background-color: #fff59d; color: black', 
+            5: 'background-color: #fbc02d; color: black'  # Жовтий
+        }
+        return colors.get(val, '')
+
     if not field_max.empty:
-        # 2. Таблиця лідерів (без графіка)
         st.subheader("Таблиця лідерів")
-        st.dataframe(field_max.style.background_gradient(subset=['Максимальна вегетація'], cmap='Greens'), use_container_width=True)
+        # Стилізація колонки "Потенціал"
+        styled_df = field_max.style.map(color_potentials, subset=['Потенціал'])
+        st.dataframe(styled_df, use_container_width=True)
     else:
         st.warning("Дані для розрахунку відсутні.")
