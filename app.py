@@ -61,7 +61,7 @@ with st.sidebar:
     st.markdown('<a href="/?page=Зведена+аналітика" target="_self" class="full-width-btn">Сівозміна</a>', unsafe_allow_html=True)
     st.markdown('<a href="/?page=Аналіз+одного+поля" target="_self" class="full-width-btn">Аналіз по полю</a>', unsafe_allow_html=True)
     st.markdown('<a href="/?page=Порівняння+культур" target="_self" class="full-width-btn">Аналіз в розрізі культур</a>', unsafe_allow_html=True)
-    st.markdown('<a href="/?page=Рейтинг+полів" target="_self" class="full-width-btn">Рейтинг полів</a>', unsafe_allow_html=True)
+    st.markdown('<a href="/?page=Максимальний+NDVI+по+полям" target="_self" class="full-width-btn">Рейтинг полів</a>', unsafe_allow_html=True)
 
 # --- ОСНОВНА ЧАСТИНА ---
 st.title("Агро-аналітика: Вегетація та сівозміна")
