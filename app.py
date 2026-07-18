@@ -98,7 +98,7 @@ elif current_page == "Порівняння культур":
             fig = px.line(data, x='Дата початку тижня', y=valid_others, title=f"Порівняння: {crop_name} ({selected_year})")
             st.plotly_chart(fig, use_container_width=True)
 
-elif current_page == "Рейтинг полів":
+elif current_page == "Максимальний NDVI по полям":
     st.header("🏆 Рейтинг полів за максимальною вегетацією (за весь період)")
     
     # 1. Розрахунок максимуму по кожному полю за ВСІ наявні дані (без фільтрації за роком)
