@@ -99,30 +99,16 @@ elif current_page == "Порівняння культур":
             st.plotly_chart(fig, use_container_width=True)
 
 elif current_page == "Рейтинг полів":
-    st.header("🏆 Рейтинг полів за максимальною вегетацією")
-    selected_year = st.selectbox("Оберіть рік для аналізу", sorted(analytics['Дата початку тижня'].dt.year.unique(), reverse=True))
+    st.header("🏆 Рейтинг полів за максимальною вегетацією (за весь період)")
     
-    # Фільтрація даних за роком
-    year_data = analytics[analytics['Дата початку тижня'].dt.year == selected_year]
-    
-    # Розрахунок максимуму
-    year_data_numeric = year_data[field_list].apply(pd.to_numeric, errors='coerce')
-    field_max = year_data_numeric.max().sort_values(ascending=False).reset_index()
+    # 1. Розрахунок максимуму по кожному полю за ВСІ наявні дані (без фільтрації за роком)
+    analytics_numeric = analytics[field_list].apply(pd.to_numeric, errors='coerce')
+    field_max = analytics_numeric.max().sort_values(ascending=False).reset_index()
     field_max.columns = ['Поле', 'Максимальна вегетація']
     
     if not field_max.empty:
-        # Графік
-        fig = px.bar(
-            field_max, 
-            x='Поле', 
-            y='Максимальна вегетація', 
-            title=f"Рейтинг полів за піковим показником вегетації у {selected_year} році",
-            color='Максимальна вегетація', 
-            color_continuous_scale='Greens'
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
+        # 2. Таблиця лідерів (без графіка)
         st.subheader("Таблиця лідерів")
         st.dataframe(field_max.style.background_gradient(subset=['Максимальна вегетація'], cmap='Greens'), use_container_width=True)
     else:
-        st.warning("Немає даних для побудови графіка у вибраному році.")
+        st.warning("Дані для розрахунку відсутні.")
