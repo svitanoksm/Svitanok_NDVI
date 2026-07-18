@@ -65,7 +65,7 @@ with st.sidebar:
 
 # --- ОСНОВНА ЧАСТИНА ---
 st.title("Агро-аналітика: Вегетація та сівозміна")
-field_list = [col for col in analytics.columns if col not in ['Дата початку тижня', 'Тиждень']]
+field_list = analytics.columns[2:].tolist()
 
 if current_page == "Зведена аналітика":
     st.header("Розподіл культур по роках")
