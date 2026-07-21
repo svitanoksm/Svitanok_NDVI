@@ -3,7 +3,7 @@ name: Weekly NDVI Update
 on:
   workflow_dispatch:
   schedule:
-    - cron: '12 20 * * 2'
+    - cron: '0 9 * * 3'
 
 jobs:
   run-ndvi-calculator:
